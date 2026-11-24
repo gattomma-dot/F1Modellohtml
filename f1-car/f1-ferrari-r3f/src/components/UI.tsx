@@ -1,201 +1,230 @@
-import { Html } from '@react-three/drei'
-import { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { useUIStore } from '../store/useUIStore'
 import { F1_2026_SPECS } from '../lib/constants'
 
 export function UI() {
   const [showSpecs, setShowSpecs] = useState(false)
-  const [wireframe, setWireframe] = useState(false)
-  const [quality, setQuality] = useState<'ultra' | 'high' | 'medium' | 'low'>('high')
-  const [autoRotate, setAutoRotate] = useState(true)
-  const [fps, setFps] = useState(60)
+  const { autoRotate, wireframe, quality } = useUIStore()
 
-  // FPS counter
-  useEffect(() => {
-    let frames = 0
-    let lastTime = performance.now()
-    const updateFps = (now: number) => {
-      frames++
-      if (now - lastTime >= 1000) {
-        setFps(Math.round(frames * 1000 / (now - lastTime)))
-        frames = 0
-        lastTime = now
-      }
-      requestAnimationFrame(updateFps)
-    }
-    const id = requestAnimationFrame(updateFps)
-    return () => cancelAnimationFrame(id)
-  }, [])
+  // Stato per pannello laterale collassabile
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Stato per vista camera attiva
+  const views = ['Hero', 'Front Wing', 'Cockpit/Halo', 'Rear Diffuser', 'Top Aero']
+  const [activeView, setActiveView] = useState(views[0])
 
   return (
-    <>
-      {/* === TITOLO PRINCIPALE IN 3D (Html di Drei) === */}
-      <Html
-        position={[0, 2.4, 0]}
-        occlude
-        transform
+    <div
+      style={{
+        position: 'fixed',
+        inset: '0',
+        pointerEvents: 'none',
+        zIndex: 10,
+      }}
+    >
+      {/* --- IN ALTO A SINISTRA: Header Minimale Scuderia --- */}
+      <div
         style={{
-          pointerEvents: 'none',
-          textAlign: 'center',
-          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'auto',
+          position: 'absolute',
+          top: '12px',
+          left: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          color: '#FF1E00',
+          fontFamily: 'Segoe UI, sans-serif',
         }}
       >
-        <div style={{
-          color: '#FF1E00',
-          fontWeight: 900,
-          fontSize: 'clamp(1.3rem, 3.5vw, 2.8rem)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.18em',
-          textShadow: '0 0 30px rgba(255,30,0,0.6), 0 2px 8px rgba(0,0,0,0.8)',
-          fontFamily: "'Segoe UI', 'Helvetica Neue', sans-serif",
-          lineHeight: 1.1,
-        }}>
-          SCUDERIA FERRARI
-          <br />
-          <span style={{
-            fontSize: 'clamp(0.8rem, 2vw, 1.4rem)',
-            fontWeight: 700,
-            color: '#FDD200',
-            letterSpacing: '0.25em',
-            display: 'block',
-            marginTop: '0.3em',
-            textShadow: '0 0 20px rgba(253,210,0,0.5)',
-          }}>
-            F1 2026
-          </span>
+        <div style={{ fontWeight: 800, fontSize: 'clamp(1rem, 3vw, 1.5rem)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+          SCUDERIA
         </div>
-      </Html>
+        <div style={{ color: '#DC0000', fontWeight: 900, fontSize: 'clamp(1.2rem, 5vw, 2.5rem)' }}>
+          SF-26
+        </div>
+        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+          TELEMETRY LIVE
+        </div>
+      </div>
 
-      {/* === PANNELLO CONTROLLI FISSO (DOM) === */}
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '20px',
-        right: '20px',
-        maxWidth: '480px',
-        margin: '0 auto',
-        background: 'rgba(10,10,10,0.92)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid #333',
-        borderRadius: '16px',
-        padding: '16px 20px',
-        color: '#fff',
-        fontFamily: "'Segoe UI', sans-serif",
-        fontSize: '13px',
-        zIndex: 100,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-      }}>
-        {/* Riga 1: Controlli principali */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#ccc' }}>
+      {/* --- IN ALTO A DESTRA: PANNELLE COLLABILI --- */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '12px',
+          right: '12px',
+          display: sidebarOpen ? 'block' : 'none',
+          minWidth: '280px',
+          maxWidth: '320px',
+          background: 'rgba(14,14,14,0.75)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(220,0,0,0.2)',
+          borderRadius: '12px',
+          padding: '12px',
+          color: '#fff',
+          fontFamily: 'SF Mono, Menlo, Consolas, monospace',
+          zIndex: 20,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>CONFIGURAZIONE</span>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{
+              fontSize: '0.7rem',
+              color: '#DC0000',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '2px 6px',
+              borderRadius: '4px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Toggle Camera Views */}
+        <div style={{ marginBottom: '10px' }}>
+          <span style={{ fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888', marginBottom: '6px' }}>Visualizza</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {views.map((view) => (
+              <button
+                key={view}
+                style={{
+                  fontFamily: 'SF Mono, Menlo, Consolas, monospace',
+                  fontSize: '0.75rem',
+                  padding: '6px 10px',
+                  background:
+                    activeView === view ? 'rgba(220,0,0,0.25)' : 'rgba(255,255,255,0.05)',
+                  color: activeView === view ? '#DC0000' : '#ccc',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  width: '100%',
+                }}
+                onClick={() => setActiveView(view)
+                }
+              >
+                {view}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Toggle Auto-Rotate */}
+        <div style={{ marginBottom: '10px' }}>
+          <span style={{ fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888', marginBottom: '4px' }}>
+            Auto-Rotate
+          </span>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}
+          >
             <input
               type="checkbox"
               checked={autoRotate}
-              onChange={(e) => setAutoRotate(e.target.checked)}
-              style={{ accentColor: '#FF1E00', width: '16px', height: '16px' }}
+              onChange={(e) =>
+                useUIStore.getState().setAutoRotate(e.target.checked)
+              }
+              style={{ width: '14px', height: '14px', accentColor: '#DC0000' }}
             />
-            Auto-rotazione
+            Attiva
           </label>
+        </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#ccc' }}>
+        {/* Toggle Exploded View */}
+        <div style={{ marginBottom: '10px' }}>
+          <span style={{ fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888', marginBottom: '4px' }}>
+            Exploded View
+          </span>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}
+          >
             <input
               type="checkbox"
               checked={wireframe}
-              onChange={(e) => setWireframe(e.target.checked)}
-              style={{ accentColor: '#FF1E00', width: '16px', height: '16px' }}
+              onChange={(e) => useUIStore.getState().setWireframe(e.target.checked)}
+              style={{ width: '14px', height: '14px', accentColor: '#DC0000' }}
             />
-            Wireframe
+            Attiva
           </label>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#ccc' }}>
-            <input
-              type="checkbox"
-              checked={showSpecs}
-              onChange={(e) => setShowSpecs(e.target.checked)}
-              style={{ accentColor: '#FF1E00', width: '16px', height: '16px' }}
-            />
-            Specifiche
-          </label>
-
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', color: '#888', fontSize: '12px' }}>
-            <span>Qualità:</span>
-            <select
-              value={quality}
-              onChange={(e) => setQuality(e.target.value as any)}
-              style={{
-                background: '#1a1a1a',
-                border: '1px solid #333',
-                color: '#fff',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontFamily: 'inherit',
-                accentColor: '#FF1E00',
-              }}
-            >
-              <option value="ultra">Ultra</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
         </div>
-
-        {/* Riga 2: FPS + Info */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid #222', color: '#888', fontSize: '12px' }}>
-          <span style={{ color: fps >= 55 ? '#4ade80' : fps >= 30 ? '#fbbf24' : '#f87171' }}>
-            ● {fps} FPS
-          </span>
-          <span>Regolamento 2026 • {F1_2026_SPECS.wheelbase}m passo • {F1_2026_SPECS.width}m larghezza • {F1_2026_SPECS.minWeight}kg</span>
-        </div>
-
-        {/* Specifiche tecniche espandibili */}
-        {showSpecs && (
-          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #222', fontSize: '11px', lineHeight: 1.8, color: '#aaa' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
-              <span>Passo:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.wheelbase * 1000} mm</span>
-              <span>Larghezza:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.width * 1000} mm</span>
-              <span>Altezza max:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.maxHeight * 1000} mm</span>
-              <span>Peso minimo:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.minWeight} kg</span>
-              <span>Ruote ant.:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.frontWheelWidth * 1000} mm</span>
-              <span>Ruote post.:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.rearWheelWidth * 1000} mm</span>
-              <span>Cerchi:</span> <span style={{ color: '#FDD200' }}>18"</span>
-              <span>Ala ant. elementi:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.frontWingElements}</span>
-              <span>Ala post. elementi:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.rearWingElements}</span>
-              <span>PU Termico:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.icePowerKW} kW</span>
-              <span>PU Elettrico:</span> <span style={{ color: '#FDD200' }}>{F1_2026_SPECS.mguKPowerKW} kW</span>
-              <span>Split energia:</span> <span style={{ color: '#FDD200' }}>{Math.round(F1_2026_SPECS.energySplit * 100)}% / {Math.round((1 - F1_2026_SPECS.energySplit) * 100)}%</span>
-              <span>Aerodinamica:</span> <span style={{ color: '#FDD200' }}>Z-Mode / X-Mode</span>
-              <span>DRS:</span> <span style={{ color: '#FDD200' }}>Sostituito da X-Mode</span>
-              <span>Halo:</span> <span style={{ color: '#FDD200' }}>Titanio</span>
-              <span>Materiali:</span> <span style={{ color: '#FDD200' }}>PBR Clearcoat/Anisotropy</span>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* === LEGENDA TASTI === */}
-      <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        background: 'rgba(10,10,10,0.85)',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid #333',
-        borderRadius: '12px',
-        padding: '12px 16px',
-        color: '#888',
-        fontSize: '11px',
-        fontFamily: "'Segoe UI', sans-serif",
-        lineHeight: 1.7,
-        zIndex: 100,
-        whiteSpace: 'nowrap',
-      }}>
-        <div style={{ color: '#fff', fontWeight: 600, marginBottom: '6px', fontSize: '12px' }}>CONTROLLI</div>
-        <div>🖱️ Trascina = Ruota</div>
-        <div>🔍 Rotella = Zoom</div>
-        <div>↔️ Click destro = Sposta</div>
-        <div>R = Reset vista</div>
+      {/* --- IN BASSO AL CENTRO: DOCK Galleggiante --- */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '8px',
+          padding: '6px 10px',
+          background: 'rgba(10,10,10,0.8)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '20px',
+          zIndex: 20,
+        }}
+      >
+        <button
+          style={{
+            fontFamily: 'SF Mono, Menlo, Consolas, monospace',
+            fontSize: '0.65rem',
+            padding: '6px 10px',
+            background:
+              activeView === 'Hero' ? 'rgba(220,0,0,0.3)' : 'rgba(255,255,255,0.03)',
+            color: activeView === 'Hero' ? '#DC0000' : '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={() => setActiveView('Hero')
+          }
+        >
+          Hero
+        </button>
+
+        <span
+          style={{
+            fontFamily: 'SF Mono, Menlo, Consolas, monospace',
+            fontSize: '0.6rem',
+            padding: '4px 8px',
+            background: autoRotate ? 'rgba(220,0,0,0.2)' : 'rgba(255,255,255,0.03)',
+            color: autoRotate ? '#DC0000' : '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>🔄</span>
+          {autoRotate ? 'On' : 'Off'}
+        </span>
+
+        <div style={{ fontSize: '0.6rem', color: '#666', marginTop: '2px' }}>
+          Cam:{activeView}
+        </div>
       </div>
-    </>
+    </div>
   )
 }

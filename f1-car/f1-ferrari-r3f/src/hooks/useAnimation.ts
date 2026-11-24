@@ -1,11 +1,10 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef, useState, useEffect } from 'react'
+import * as THREE from 'three'
 
 // Hook per animazioni sincronizzate
 export function useAnimation() {
   const clock = useThree((state) => state.clock)
-  const camera = useThree((state) => state.camera)
-  const gl = useThree((state) => state.gl)
 
   // Stato animazioni
   const wheelRotation = useRef(0)
@@ -54,14 +53,6 @@ export function useAnimation() {
         mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, targetRotation, 0.15)
       }
     })
-
-    // Leggero movimento sospensioni (compressione/estensione)
-    const suspensionOffset = Math.sin(t * 8) * 0.008 * (speedKmh / 300)
-    // Nota: le sospensioni reali richiedono refs alle mesh dei sidepods/corpo
-
-    // Leggero rollio in curva (simulato)
-    const rollAngle = Math.sin(t * 0.5) * 0.02
-    // Nota: rollio reale richiede ref al gruppo auto
   })
 
   // Funzioni per registrare mesh animate
@@ -75,9 +66,11 @@ export function useAnimation() {
 
   // Cleanup
   useEffect(() => {
+    const wheelRefsCopy = wheelRefs.current
+    const flapRefsCopy = flapRefs.current
     return () => {
-      wheelRefs.current.clear()
-      flapRefs.current.clear()
+      wheelRefsCopy.clear()
+      flapRefsCopy.clear()
     }
   }, [])
 
@@ -176,6 +169,3 @@ export function useQualitySettings(quality: 'ultra' | 'high' | 'medium' | 'low')
     }
   }, [quality])
 }
-
-// Import THREE per i tipi
-import * as THREE from 'three'

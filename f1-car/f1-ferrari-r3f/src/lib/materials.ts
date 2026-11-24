@@ -14,7 +14,7 @@ export const ferrariMaterials = {
     roughness: 0.16,
     clearcoat: 0.45,
     clearcoatRoughness: 0.08,
-    clearcoatNormalScale: 0.5,
+    clearcoatNormalScale: new THREE.Vector2(0.5, 0.5),
     envMapIntensity: 1.1,
     reflectivity: 1.0,
   }),
